@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Local runtime data
+workspace/
+backend/openfars.db
+backend/openfars.db-*
+
+# Node / frontend
+ui/app/node_modules/
+ui/app/dist/
+
+# OS / tooling noise
+*.log
+*.tmp
+.DS_Store
+*.Zone.Identifier
+.serena/
