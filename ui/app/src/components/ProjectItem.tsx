@@ -13,8 +13,8 @@ export function ProjectItem({ project, isSelected, onClick, index }: ProjectItem
     <motion.div
       className={`px-3 py-2.5 rounded-lg cursor-pointer text-sm transition-all duration-200 ${
         isSelected
-          ? 'bg-white border border-indigo-200 shadow-sm text-indigo-700 font-medium'
-          : 'text-slate-600 hover:bg-slate-100 hover:text-slate-800'
+          ? 'bg-primary/10 border border-primary/20 shadow-sm text-primary font-medium'
+          : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
       }`}
       onClick={onClick}
       initial={{ opacity: 0, x: -10 }}

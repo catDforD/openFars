@@ -39,7 +39,7 @@ export function TimerDisplay({ initialTime }: TimerDisplayProps) {
 
   return (
     <motion.div
-      className="text-lg font-semibold text-slate-900 font-mono"
+      className="text-lg font-semibold text-foreground font-mono"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}

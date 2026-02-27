@@ -25,7 +25,7 @@ function App() {
   } = useRunStore();
 
   return (
-    <div className="h-screen flex flex-col bg-white overflow-hidden">
+    <div className="h-screen flex flex-col bg-background text-foreground overflow-hidden">
       {/* Header */}
       <Header
         paperTitle={paperTitle}
@@ -47,7 +47,7 @@ function App() {
       />
 
       {error && (
-        <div className="px-4 py-2 text-xs bg-red-50 border-b border-red-200 text-red-700">
+        <div className="px-4 py-2 text-xs bg-red-50 border-b border-red-200 text-red-700 dark:bg-red-500/10 dark:border-red-500/20 dark:text-red-300">
           {error}
         </div>
       )}
@@ -77,7 +77,7 @@ function App() {
       <StatsBar stats={stats} />
 
       {loading && (
-        <div className="fixed inset-0 bg-white/70 backdrop-blur-[1px] z-50 flex items-center justify-center text-sm text-slate-700">
+        <div className="fixed inset-0 bg-background/70 backdrop-blur-[1px] z-50 flex items-center justify-center text-sm text-muted-foreground">
           Initializing OpenFARS session...
         </div>
       )}

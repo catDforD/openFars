@@ -33,18 +33,18 @@ export function ProjectQueue({
 
   return (
     <motion.aside
-      className="w-[200px] bg-slate-50 border-r border-slate-200 flex flex-col"
+      className="w-[200px] bg-muted/30 border-r border-border flex flex-col"
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: 0.1, duration: 0.4 }}
     >
       {/* Header */}
-      <div className="p-4 border-b border-slate-200">
+      <div className="p-4 border-b border-border">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-sm font-semibold text-slate-700">Project Queue</h2>
+          <h2 className="text-sm font-semibold text-foreground">Project Queue</h2>
           <Badge
             variant="secondary"
-            className="bg-emerald-100 text-emerald-700 text-xs font-medium"
+            className="bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300 text-xs font-medium"
           >
             LIVE
           </Badge>
@@ -52,18 +52,18 @@ export function ProjectQueue({
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="w-full h-8 bg-slate-200/50 p-0.5">
+          <TabsList className="w-full h-8 bg-muted p-0.5">
             <TabsTrigger
               value="in_progress"
-              className="flex-1 h-7 text-xs data-[state=active]:bg-white data-[state=active]:text-slate-900"
+              className="flex-1 h-7 text-xs data-[state=active]:bg-background data-[state=active]:text-foreground"
             >
               In Progress
             </TabsTrigger>
             <TabsTrigger
               value="completed"
-              className="flex-1 h-7 text-xs data-[state=active]:bg-white data-[state=active]:text-slate-900"
+              className="flex-1 h-7 text-xs data-[state=active]:bg-background data-[state=active]:text-foreground"
             >
-              completed
+              Completed
             </TabsTrigger>
           </TabsList>
         </Tabs>
@@ -90,11 +90,11 @@ export function ProjectQueue({
       </ScrollArea>
 
       {/* New Project Button */}
-      <div className="p-3 border-t border-slate-200">
+      <div className="p-3 border-t border-border">
         <Button
           variant="outline"
           onClick={onCreateProject}
-          className="w-full h-9 text-xs font-medium border-slate-300 text-slate-600 hover:bg-slate-100 hover:text-slate-800"
+          className="w-full h-9 text-xs font-medium border-border text-muted-foreground hover:bg-accent hover:text-accent-foreground"
         >
           <Plus className="w-4 h-4 mr-1.5" />
           New Project

@@ -10,10 +10,10 @@ interface StepItemProps {
 }
 
 const statusConfig: Record<StepStatus, { icon: React.ElementType; color: string; bgColor: string }> = {
-  completed: { icon: Check, color: 'text-emerald-500', bgColor: 'bg-emerald-50' },
-  running: { icon: Loader2, color: 'text-blue-500', bgColor: 'bg-blue-50' },
-  pending: { icon: Circle, color: 'text-slate-400', bgColor: 'bg-slate-50' },
-  error: { icon: X, color: 'text-red-500', bgColor: 'bg-red-50' },
+  completed: { icon: Check, color: 'text-emerald-600 dark:text-emerald-300', bgColor: 'bg-emerald-100 dark:bg-emerald-500/15' },
+  running: { icon: Loader2, color: 'text-blue-600 dark:text-blue-300', bgColor: 'bg-blue-100 dark:bg-blue-500/15' },
+  pending: { icon: Circle, color: 'text-muted-foreground', bgColor: 'bg-muted' },
+  error: { icon: X, color: 'text-red-600 dark:text-red-300', bgColor: 'bg-red-100 dark:bg-red-500/15' },
 };
 
 export function StepItem({ step, index }: StepItemProps) {
@@ -24,14 +24,14 @@ export function StepItem({ step, index }: StepItemProps) {
 
   return (
     <motion.div
-      className="border-b border-slate-100 last:border-b-0"
+      className="border-b border-border/60 last:border-b-0"
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: index * 0.05, duration: 0.3 }}
     >
       <motion.div
         className={`flex items-start gap-3 py-3 px-2 rounded-lg cursor-pointer transition-colors ${
-          step.status === 'running' ? 'bg-blue-50/50' : 'hover:bg-slate-50'
+          step.status === 'running' ? 'bg-blue-50/60 dark:bg-blue-500/10' : 'hover:bg-accent/60'
         }`}
         onClick={() => hasSubSteps && setIsExpanded(!isExpanded)}
         whileHover={{ x: hasSubSteps ? 2 : 0 }}
@@ -47,7 +47,7 @@ export function StepItem({ step, index }: StepItemProps) {
         </div>
 
         {/* Step Number */}
-        <span className="flex-shrink-0 w-6 text-sm font-medium text-slate-500">
+        <span className="flex-shrink-0 w-6 text-sm font-medium text-muted-foreground">
           {step.number}.
         </span>
 
@@ -55,17 +55,17 @@ export function StepItem({ step, index }: StepItemProps) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <span className={`text-sm ${
-              step.status === 'completed' ? 'text-slate-700 line-through' :
-              step.status === 'running' ? 'text-slate-900 font-medium' :
-              'text-slate-600'
+              step.status === 'completed' ? 'text-muted-foreground line-through' :
+              step.status === 'running' ? 'text-foreground font-medium' :
+              'text-muted-foreground'
             }`}>
               {step.title}
             </span>
             {step.status === 'completed' && (
-              <span className="text-xs text-emerald-600 font-medium">Completed</span>
+              <span className="text-xs text-emerald-600 dark:text-emerald-300 font-medium">Completed</span>
             )}
             {step.status === 'running' && (
-              <span className="text-xs text-blue-600 font-medium">Running</span>
+              <span className="text-xs text-blue-600 dark:text-blue-300 font-medium">Running</span>
             )}
           </div>
         </div>
@@ -76,7 +76,7 @@ export function StepItem({ step, index }: StepItemProps) {
             animate={{ rotate: isExpanded ? 180 : 0 }}
             transition={{ duration: 0.2 }}
           >
-            <ChevronDown className="w-4 h-4 text-slate-400" />
+            <ChevronDown className="w-4 h-4 text-muted-foreground" />
           </motion.div>
         )}
       </motion.div>
@@ -100,7 +100,7 @@ export function StepItem({ step, index }: StepItemProps) {
                   <motion.div
                     key={subStep.id}
                     className={`flex items-start gap-2 py-1.5 px-2 rounded-md ${
-                      subStep.status === 'running' ? 'bg-blue-50/50' : 'hover:bg-slate-50'
+                      subStep.status === 'running' ? 'bg-blue-50/60 dark:bg-blue-500/10' : 'hover:bg-accent/60'
                     }`}
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
@@ -114,9 +114,9 @@ export function StepItem({ step, index }: StepItemProps) {
                       )}
                     </div>
                     <span className={`text-xs ${
-                      subStep.status === 'completed' ? 'text-slate-500 line-through' :
-                      subStep.status === 'running' ? 'text-slate-700' :
-                      'text-slate-500'
+                      subStep.status === 'completed' ? 'text-muted-foreground line-through' :
+                      subStep.status === 'running' ? 'text-foreground' :
+                      'text-muted-foreground'
                     }`}>
                       {subStep.content}
                     </span>

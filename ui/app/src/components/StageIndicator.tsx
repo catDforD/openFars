@@ -27,7 +27,7 @@ export function StageIndicator({ currentStage }: StageIndicatorProps) {
           <div key={stage.id} className="flex items-center flex-1">
             <motion.div
               className={`flex flex-col items-center gap-2 ${
-                isActive ? 'text-indigo-600' : isCompleted ? 'text-emerald-500' : 'text-slate-400'
+                isActive ? 'text-primary' : isCompleted ? 'text-emerald-600 dark:text-emerald-300' : 'text-muted-foreground'
               }`}
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -36,10 +36,10 @@ export function StageIndicator({ currentStage }: StageIndicatorProps) {
               <motion.div
                 className={`w-10 h-10 rounded-full flex items-center justify-center border-2 ${
                   isActive
-                    ? 'border-indigo-600 bg-indigo-50'
+                    ? 'border-primary bg-primary/10'
                     : isCompleted
-                    ? 'border-emerald-500 bg-emerald-50'
-                    : 'border-slate-300 bg-slate-50'
+                    ? 'border-emerald-500 bg-emerald-100 dark:bg-emerald-500/15'
+                    : 'border-border bg-muted/50'
                 }`}
                 whileHover={{ scale: 1.05 }}
                 transition={{ duration: 0.2 }}
@@ -47,7 +47,7 @@ export function StageIndicator({ currentStage }: StageIndicatorProps) {
                 <Icon className="w-5 h-5" />
               </motion.div>
               <span className={`text-sm font-medium ${
-                isActive ? 'text-indigo-600' : isCompleted ? 'text-emerald-600' : 'text-slate-500'
+                isActive ? 'text-primary' : isCompleted ? 'text-emerald-600 dark:text-emerald-300' : 'text-muted-foreground'
               }`}>
                 {stage.label}
               </span>
@@ -55,7 +55,7 @@ export function StageIndicator({ currentStage }: StageIndicatorProps) {
             
             {index < stages.length - 1 && (
               <div className="flex-1 mx-4 relative">
-                <div className="h-0.5 bg-slate-200 rounded-full" />
+                <div className="h-0.5 bg-border rounded-full" />
                 <motion.div
                   className="absolute top-0 left-0 h-0.5 bg-emerald-500 rounded-full"
                   initial={{ width: 0 }}

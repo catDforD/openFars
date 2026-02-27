@@ -11,7 +11,7 @@ interface ExperimentStageProps {
 export function ExperimentStage({ steps }: ExperimentStageProps) {
   return (
     <motion.main
-      className="flex-1 bg-white flex flex-col min-w-0"
+      className="flex-1 bg-background flex flex-col min-w-0"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ delay: 0.2, duration: 0.4 }}

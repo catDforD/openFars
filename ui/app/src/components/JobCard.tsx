@@ -35,7 +35,7 @@ export function JobCard({ job, index }: JobCardProps) {
 
   return (
     <motion.div
-      className="bg-white rounded-lg border border-slate-200 p-4 hover:border-slate-300 hover:shadow-sm transition-all duration-200"
+      className="bg-card text-card-foreground rounded-lg border border-border p-4 hover:border-primary/30 hover:shadow-sm transition-all duration-200"
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.1, duration: 0.3 }}
@@ -44,10 +44,10 @@ export function JobCard({ job, index }: JobCardProps) {
       {/* Header */}
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
-          <span className="text-xs text-slate-400 font-mono">{job.time}</span>
+          <span className="text-xs text-muted-foreground font-mono">{job.time}</span>
           <div className="flex items-center gap-1.5">
-            <Monitor className="w-3.5 h-3.5 text-slate-500" />
-            <span className="text-sm font-medium text-slate-700">{job.title}</span>
+            <Monitor className="w-3.5 h-3.5 text-muted-foreground" />
+            <span className="text-sm font-medium text-foreground">{job.title}</span>
           </div>
         </div>
         {job.status === 'running' && (
@@ -56,12 +56,12 @@ export function JobCard({ job, index }: JobCardProps) {
       </div>
 
       {/* Content */}
-      <p className="text-xs text-slate-600 leading-relaxed mb-3">
+      <p className="text-xs text-muted-foreground leading-relaxed mb-3">
         {job.content}
       </p>
 
       {/* Footer */}
-      <div className="flex items-center justify-between text-xs text-slate-400">
+      <div className="flex items-center justify-between text-xs text-muted-foreground">
         <div className="flex items-center gap-1.5">
           <Clock className="w-3 h-3" />
           <span>Worked for {job.workedFor}</span>
@@ -69,7 +69,7 @@ export function JobCard({ job, index }: JobCardProps) {
         <Button
           variant="ghost"
           size="sm"
-          className="h-6 px-1.5 text-[11px] text-slate-500 hover:text-slate-700"
+          className="h-6 px-1.5 text-[11px] text-muted-foreground hover:text-foreground"
           onClick={() => setExpanded((current) => !current)}
         >
           详情
