@@ -9,21 +9,42 @@ function App() {
   const {
     projects,
     selectedProjectId,
+    run,
     steps,
     jobs,
     stats,
     paperTitle,
     connected,
     loading,
+    isStarting,
     error,
     selectProject,
     createAndSelectProject,
+    startSimpleRun,
+    sendControl,
   } = useRunStore();
 
   return (
     <div className="h-screen flex flex-col bg-white overflow-hidden">
       {/* Header */}
-      <Header paperTitle={paperTitle} connected={connected} />
+      <Header
+        paperTitle={paperTitle}
+        connected={connected}
+        runStatus={run?.status ?? null}
+        busy={isStarting}
+        onStartTest={() => {
+          void startSimpleRun();
+        }}
+        onPause={() => {
+          void sendControl('pause');
+        }}
+        onResume={() => {
+          void sendControl('resume');
+        }}
+        onCancel={() => {
+          void sendControl('cancel');
+        }}
+      />
 
       {error && (
         <div className="px-4 py-2 text-xs bg-red-50 border-b border-red-200 text-red-700">

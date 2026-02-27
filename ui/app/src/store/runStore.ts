@@ -14,7 +14,7 @@ import {
   type RunControlAction,
 } from '@/api/client';
 import { RunWebSocketClient, type RunEvent } from '@/realtime/ws';
-import type { Artifact, ExperimentStep, Job, Project, Run, Stats } from '@/types';
+import type { Artifact, ExperimentStep, Job, Project, Run, RunStatus, Stats } from '@/types';
 
 const DEFAULT_STATS: Stats = {
   runId: '',
@@ -56,6 +56,7 @@ export function useRunStore() {
   const [paperTitle, setPaperTitle] = useState('OpenFARS Autonomous Research Pipeline');
   const [connected, setConnected] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [isStarting, setIsStarting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const wsRef = useRef<RunWebSocketClient | null>(null);
@@ -67,6 +68,15 @@ export function useRunStore() {
     }
     setConnected(false);
   }, []);
+
+  const clearRunState = useCallback(() => {
+    disconnectWebsocket();
+    setRun(null);
+    setSteps([]);
+    setJobs([]);
+    setArtifacts([]);
+    setStats({ ...DEFAULT_STATS });
+  }, [disconnectWebsocket]);
 
   const handleRunEvent = useCallback((event: RunEvent) => {
     const payload = (event.payload ?? {}) as SnapshotPayload & {
@@ -83,7 +93,7 @@ export function useRunStore() {
         setSteps(payload.steps ?? []);
         setJobs(payload.jobs ?? []);
         setArtifacts(payload.artifacts ?? []);
-        setStats(payload.stats ?? DEFAULT_STATS);
+        setStats(payload.stats ?? { ...DEFAULT_STATS, runId: payload.run?.id ?? '' });
         return;
       case 'run_started':
       case 'run_completed':
@@ -156,15 +166,32 @@ export function useRunStore() {
     [connectWebsocket],
   );
 
-  const ensureProjectRun = useCallback(
+  const syncRunState = useCallback(async (runId: string) => {
+    const [nextRun, nextSteps, nextJobs, nextArtifacts, nextStats] = await Promise.all([
+      getRun(runId),
+      getSteps(runId),
+      getJobs(runId),
+      getArtifacts(runId),
+      getStats(runId),
+    ]);
+
+    setRun(nextRun);
+    setSteps(nextSteps);
+    setJobs(nextJobs);
+    setArtifacts(nextArtifacts);
+    setStats(nextStats);
+  }, []);
+
+  const loadLatestRunForProject = useCallback(
     async (projectId: string) => {
-      let nextRun = await getLatestRun(projectId);
+      const nextRun = await getLatestRun(projectId);
       if (!nextRun) {
-        nextRun = await createRun(projectId, true);
+        clearRunState();
+        return;
       }
       await hydrateRun(nextRun.id);
     },
-    [hydrateRun],
+    [clearRunState, hydrateRun],
   );
 
   const reloadProjects = useCallback(async (): Promise<Project[]> => {
@@ -194,7 +221,7 @@ export function useRunStore() {
         const project = list[0];
         setSelectedProjectId(project.id);
         setPaperTitle(`${project.name} - OpenFARS Autonomous Research Pipeline`);
-        await ensureProjectRun(project.id);
+        await loadLatestRunForProject(project.id);
       } catch (err) {
         if (!cancelled) {
           setError(err instanceof Error ? err.message : 'Failed to initialize OpenFARS session');
@@ -212,7 +239,7 @@ export function useRunStore() {
       cancelled = true;
       disconnectWebsocket();
     };
-  }, [disconnectWebsocket, ensureProjectRun, reloadProjects]);
+  }, [disconnectWebsocket, loadLatestRunForProject, reloadProjects]);
 
   const selectProject = useCallback(
     async (projectId: string) => {
@@ -228,12 +255,12 @@ export function useRunStore() {
       }
 
       try {
-        await ensureProjectRun(projectId);
+        await loadLatestRunForProject(projectId);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to switch project');
       }
     },
-    [ensureProjectRun, projects, selectedProjectId],
+    [loadLatestRunForProject, projects, selectedProjectId],
   );
 
   const createAndSelectProject = useCallback(async () => {
@@ -243,25 +270,49 @@ export function useRunStore() {
       setProjects((current) => [project, ...current]);
       setSelectedProjectId(project.id);
       setPaperTitle(`${project.name} - OpenFARS Autonomous Research Pipeline`);
-      await ensureProjectRun(project.id);
+      clearRunState();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create project');
     }
-  }, [ensureProjectRun]);
+  }, [clearRunState]);
+
+  const startSimpleRun = useCallback(async () => {
+    if (!selectedProjectId) {
+      setError('Select a project first');
+      return;
+    }
+
+    setIsStarting(true);
+    setError(null);
+    try {
+      const nextRun = await createRun(selectedProjectId, true);
+      await hydrateRun(nextRun.id);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to start test run');
+    } finally {
+      setIsStarting(false);
+    }
+  }, [hydrateRun, selectedProjectId]);
 
   const sendControl = useCallback(
     async (action: RunControlAction) => {
       if (!run) {
         return;
       }
+      setError(null);
       try {
         await controlRun(run.id, action);
+        await syncRunState(run.id);
       } catch (err) {
         setError(err instanceof Error ? err.message : `Failed to ${action} run`);
       }
     },
-    [run],
+    [run, syncRunState],
   );
+
+  const currentRunStatus: RunStatus | null = run?.status ?? null;
+  const isControllable =
+    currentRunStatus !== null && ['running', 'paused', 'pending'].includes(currentRunStatus);
 
   return useMemo(
     () => ({
@@ -275,9 +326,13 @@ export function useRunStore() {
       paperTitle,
       connected,
       loading,
+      isStarting,
       error,
+      currentRunStatus,
+      isControllable,
       selectProject,
       createAndSelectProject,
+      startSimpleRun,
       sendControl,
     }),
     [
@@ -291,9 +346,13 @@ export function useRunStore() {
       paperTitle,
       connected,
       loading,
+      isStarting,
       error,
+      currentRunStatus,
+      isControllable,
       selectProject,
       createAndSelectProject,
+      startSimpleRun,
       sendControl,
     ],
   );

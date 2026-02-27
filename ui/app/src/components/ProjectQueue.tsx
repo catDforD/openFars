@@ -81,6 +81,11 @@ export function ProjectQueue({
               index={index}
             />
           ))}
+          {filteredProjects.length === 0 && (
+            <div className="px-3 py-4 text-xs text-slate-500 leading-relaxed">
+              当前没有可显示项目。创建项目后点击顶部“开始测试”创建并运行新任务。
+            </div>
+          )}
         </div>
       </ScrollArea>
 

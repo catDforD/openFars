@@ -59,9 +59,7 @@ class RunOrchestrator:
         if action == "pause":
             control.resume_event.clear()
             self.db.update_run(run_id, status="paused")
-            run = self.db.get_run(run_id)
-            if run:
-                await self.event_bus.publish(run_id, "step_updated", {"run": run})
+            await self._publish_run_state(run_id)
             return {"status": "ok", "message": "Run paused"}
 
         if action == "resume":
@@ -71,11 +69,14 @@ class RunOrchestrator:
                 self.db.update_run(run_id, status="running")
             if control.task is None or control.task.done():
                 self.start_run(run_id)
+            await self._publish_run_state(run_id)
             return {"status": "ok", "message": "Run resumed"}
 
         if action == "cancel":
             control.cancel_requested = True
             control.resume_event.set()
+            self.db.update_run(run_id, status="failed", ended_at=now_iso())
+            await self._publish_run_state(run_id)
             return {"status": "ok", "message": "Run cancellation requested"}
 
         if action == "retry":
@@ -83,6 +84,7 @@ class RunOrchestrator:
             control.cancel_requested = False
             control.resume_event.set()
             self.start_run(run_id)
+            await self._publish_run_state(run_id)
             return {"status": "ok", "message": "Retry started"}
 
         return {"status": "error", "message": f"Unknown action: {action}"}
@@ -146,6 +148,10 @@ class RunOrchestrator:
             success = False
             attempt = 0
             while not success and attempt <= self.max_retries:
+                if control.cancel_requested:
+                    await self._fail_run(run_id, reason="cancelled")
+                    return
+
                 attempt += 1
                 self.db.update_run(run_id, status="running", current_step_index=index)
                 self.db.update_step(step_id, status="running", started_at=now_iso(), ended_at=None, error_message=None)
@@ -187,6 +193,14 @@ class RunOrchestrator:
                     )
                     await self.event_bus.publish(run_id, "artifact_created", {"artifact": artifact})
 
+                if control.cancel_requested:
+                    self.db.update_step(step_id, status="error", ended_at=now_iso(), error_message="Run cancelled by user")
+                    failed_step = self.db.get_step_by_key(run_id, step_key)
+                    if failed_step:
+                        await self.event_bus.publish(run_id, "step_updated", {"step": failed_step})
+                    await self._fail_run(run_id, reason="cancelled")
+                    return
+
                 if result.status == "success":
                     self.db.update_step(step_id, status="completed", ended_at=now_iso(), error_message=None)
                     completed_step = self.db.get_step_by_key(run_id, step_key)
@@ -211,10 +225,7 @@ class RunOrchestrator:
                 failed_step = self.db.get_step_by_key(run_id, step_key)
                 if failed_step:
                     await self.event_bus.publish(run_id, "step_updated", {"step": failed_step})
-                self.db.update_run(run_id, status="failed", ended_at=now_iso())
-                failed_run = self.db.get_run(run_id)
-                if failed_run:
-                    await self.event_bus.publish(run_id, "run_failed", {"run": failed_run, "reason": result.summary})
+                await self._fail_run(run_id, reason=result.summary)
                 return
 
             steps = self.db.list_steps(run_id)
@@ -232,6 +243,17 @@ class RunOrchestrator:
                     "artifacts": self.db.list_artifacts(run_id),
                 },
             )
+
+    async def _publish_run_state(self, run_id: str) -> None:
+        run = self.db.get_run(run_id)
+        if run:
+            await self.event_bus.publish(run_id, "step_updated", {"run": run})
+
+    async def _fail_run(self, run_id: str, reason: str) -> None:
+        self.db.update_run(run_id, status="failed", ended_at=now_iso())
+        failed_run = self.db.get_run(run_id)
+        if failed_run:
+            await self.event_bus.publish(run_id, "run_failed", {"run": failed_run, "reason": reason})
 
     def _execute_step(self, run: dict[str, Any], run_id: str, step_key: str, attempt: int):
         workspace_dir = self.workspace_root / run["projectId"] / run_id / step_key

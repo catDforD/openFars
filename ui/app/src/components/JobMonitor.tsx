@@ -10,7 +10,7 @@ interface JobMonitorProps {
 export function JobMonitor({ jobs }: JobMonitorProps) {
   return (
     <motion.aside
-      className="w-[320px] bg-slate-50 border-l border-slate-200 flex flex-col"
+      className="w-[320px] bg-slate-50 border-l border-slate-200 flex flex-col min-h-0"
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: 0.3, duration: 0.4 }}
@@ -23,10 +23,11 @@ export function JobMonitor({ jobs }: JobMonitorProps) {
           </div>
           <h2 className="text-sm font-semibold text-slate-700">Job Monitor</h2>
         </div>
+        <p className="mt-2 text-[11px] text-slate-500">点击每条日志右侧“详情”可查看 raw 输出与元信息。</p>
       </div>
 
       {/* Job List */}
-      <ScrollArea className="flex-1">
+      <ScrollArea className="flex-1 min-h-0">
         <div className="p-3 space-y-3">
           {jobs.map((job, index) => (
             <JobCard key={job.id} job={job} index={index} />

@@ -1,16 +1,38 @@
 import { motion } from 'framer-motion';
+import { Pause, Play, Square } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import type { RunStatus } from '@/types';
 
 interface HeaderProps {
   paperTitle: string;
   connected: boolean;
+  runStatus: RunStatus | null;
+  busy: boolean;
+  onStartTest: () => void;
+  onPause: () => void;
+  onResume: () => void;
+  onCancel: () => void;
 }
 
-export function Header({ paperTitle, connected }: HeaderProps) {
+export function Header({
+  paperTitle,
+  connected,
+  runStatus,
+  busy,
+  onStartTest,
+  onPause,
+  onResume,
+  onCancel,
+}: HeaderProps) {
+  const canPause = runStatus === 'running';
+  const canResume = runStatus === 'paused' || runStatus === 'pending';
+  const canCancel = runStatus === 'running' || runStatus === 'paused' || runStatus === 'pending';
+
   return (
     <motion.header
-      className="h-14 bg-white border-b border-slate-200 flex items-center justify-between px-4 sticky top-0 z-50"
+      className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 sticky top-0 z-50"
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
@@ -48,19 +70,41 @@ export function Header({ paperTitle, connected }: HeaderProps) {
         </h1>
       </motion.div>
 
-      {/* Right: Avatar */}
+      {/* Right: Controls + Avatar */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
+        className="flex items-center gap-2"
+        initial={{ opacity: 0, scale: 0.98 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.2, duration: 0.3 }}
-        whileHover={{ scale: 1.05 }}
       >
-        <Avatar className="w-8 h-8 cursor-pointer ring-2 ring-slate-100">
-          <AvatarImage src="/avatar.png" alt="User" />
-          <AvatarFallback className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-xs">
-            RS
-          </AvatarFallback>
-        </Avatar>
+        <Badge variant="outline" className="text-[10px] uppercase tracking-wide text-slate-600">
+          {runStatus ?? 'idle'}
+        </Badge>
+        <Button size="sm" className="h-8 px-2.5 text-xs" disabled={busy} onClick={onStartTest}>
+          <Play className="w-3.5 h-3.5 mr-1" />
+          开始测试
+        </Button>
+        <Button size="sm" variant="outline" className="h-8 px-2 text-xs" disabled={!canPause} onClick={onPause}>
+          <Pause className="w-3.5 h-3.5 mr-1" />
+          暂停
+        </Button>
+        <Button size="sm" variant="outline" className="h-8 px-2 text-xs" disabled={!canResume} onClick={onResume}>
+          <Play className="w-3.5 h-3.5 mr-1" />
+          继续
+        </Button>
+        <Button size="sm" variant="destructive" className="h-8 px-2 text-xs" disabled={!canCancel} onClick={onCancel}>
+          <Square className="w-3.5 h-3.5 mr-1" />
+          停止
+        </Button>
+
+        <motion.div whileHover={{ scale: 1.05 }} transition={{ duration: 0.2 }}>
+          <Avatar className="w-8 h-8 cursor-pointer ring-2 ring-slate-100">
+            <AvatarImage src="/avatar.png" alt="User" />
+            <AvatarFallback className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-xs">
+              RS
+            </AvatarFallback>
+          </Avatar>
+        </motion.div>
       </motion.div>
     </motion.header>
   );
